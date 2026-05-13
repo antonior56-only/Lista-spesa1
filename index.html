@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lista della Spesa Pro</title>
+    <style>
+        /* Reset e Stili Base */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            padding: 10px;
+            line-height: 1.5;
+            color: #1c1e21;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto 15px auto;
+            background: #ffffff;
+            padding: 18px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        h1, h2 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #1a73e8;
+        }
+
+        h1 { font-size: 24px; font-weight: 800; }
+        h2 { font-size: 18px; margin-top: 10px; border-top: 1px solid #eee; padding-top: 15px; }
+
+        /* --- LAYOUT INPUT OTTIMIZZATO PER SCHERMI STRETTI --- */
+        .input-group {
+            display: flex;
+            flex-direction: column; /* I pulsanti vanno sotto l'input */
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* Se lo schermo è abbastanza largo (es. tablet), tornano affiancati */
+        @media (min-width: 400px) {
+            .input-group {
+                flex-direction: row;
+            }
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 14px;
+            border: 2px solid #dfe1e5;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        /* Pulsanti d'azione principali */
+        .btn-main {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #1a73e8;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(26, 115, 232, 0.3);
+        }
+
+        .btn-save {
+            background: #00796b;
+            box-shadow: 0 2px 4px rgba(0, 121, 107, 0.3);
+        }
+
+        button:active {
+            transform: scale(0.97);
+            filter: brightness(0.9);
+        }
+
+        /* Liste */
+        ul {
+            list-style: none;
+            margin-bottom: 15px;
+        }
+
+        li {
+            display: flex;
+            flex-direction: column;
+            padding: 14px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background-color: #fff;
+        }
+
+        li.purchased {
+            background-color: #f8f9fa;
+            opacity: 0.6;
+        }
+
+        .item-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .item-text {
+            flex: 1;
+            font-size: 17px;
+            font-weight: 500;
+        }
+
+        li.purchased .item-text {
+            text-decoration: line-through;
+            color: #777;
+        }
+
+        /* Azioni riga */
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .actions button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 6px;
+            border: none;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .btn-toggle { background: #34a853; }
+        .btn-delete { background: #ea4335; }
+
+        /* Bottoni Utility */
+        .btn-mass-load { 
+            background: #8e24aa; 
+            width: 100%; 
+            margin-bottom: 15px; 
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+            border: none;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .btn-clear { 
+            background: #5f6368; 
+            width: 100%; 
+            padding: 12px;
+            border: none;
+            color: white;
+            border-radius: 8px;
+        }
+
+        /* Sezione Ricorrenti */
+        .recurring-section {
+            background-color: #e8f0fe;
+            border: 1px solid #d2e3fc;
+        }
+
+        .recurring-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            border: 1px solid #cdd7e0;
+        }
+
+        .btn-remove-rec {
+            padding: 8px 12px;
+            background: #fce8e6;
+            color: #c5221f;
+            border-radius: 4px;
+            border: 1px solid #fad2cf;
+            font-size: 13px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Lista Spesa</h1>
+        
+        <div class="input-group">
+            <input type="text" id="itemInput" placeholder="Cosa devi comprare?">
+            <button id="addButton" class="btn-main">Aggiungi Prodotto</button>
+        </div>
+        
+        <button id="loadRecurringButton" class="btn-mass-load">🔄 Carica Ricorrenti</button>
+        
+        <ul id="shoppingList"></ul>
+        
+        <button id="clearAllButton" class="btn-clear">Svuota tutto</button>
+    </div>
+
+    <div class="container recurring-section">
+        <h2>Articoli Ricorrenti</h2>
+        <div class="input-group">
+            <input type="text" id="recurringInput" placeholder="Es: Pane, Latte...">
+            <button id="addRecurringButton" class="btn-main btn-save">Salva Ricorrente</button>
+        </div>
+        <div id="recurringList"></div>
+    </div>
+
+    <script>
+        let shoppingItems = JSON.parse(localStorage.getItem('shoppingData')) || [];
+        let recurringItems = JSON.parse(localStorage.getItem('recurringData')) || [];
+        let draggedItemIndex = null;
+
+        const itemInput = document.getElementById('itemInput');
+        const addButton = document.getElementById('addButton');
+        const shoppingList = document.getElementById('shoppingList');
+        const clearAllButton = document.getElementById('clearAllButton');
+        const recurringInput = document.getElementById('recurringInput');
+        const addRecurringButton = document.getElementById('addRecurringButton');
+        const recurringListContainer = document.getElementById('recurringList');
+        const loadRecurringButton = document.getElementById('loadRecurringButton');
+
+        function persist() {
+            localStorage.setItem('shoppingData', JSON.stringify(shoppingItems));
+            localStorage.setItem('recurringData', JSON.stringify(recurringItems));
+        }
+
+        function isItemInList(itemName) {
+            const normalizedInput = itemName.toLowerCase();
+            return shoppingItems.some(item => item.text.toLowerCase() === normalizedInput);
+        }
+
+        function renderShoppingList() {
+            shoppingList.innerHTML = '';
+            const sortedItems = [...shoppingItems].map((item, originalIndex) => ({...item, originalIndex}))
+                .sort((a, b) => a.purchased - b.purchased);
+
+            sortedItems.forEach((item) => {
+                const li = document.createElement('li');
+                if (item.purchased) li.classList.add('purchased');
+
+                li.innerHTML = `
+                    <div class="item-content">
+                        <span class="item-text">${item.text}</span>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-toggle" onclick="toggleItem(${item.originalIndex})">${item.purchased ? 'Annulla' : 'Preso'}</button>
+                        <button class="btn-delete" onclick="deleteItem(${item.originalIndex})">Elimina</button>
+                    </div>
+                `;
+                shoppingList.appendChild(li);
+            });
+        }
+
+        function addItem() {
+            const val = itemInput.value.trim();
+            if (!val) return;
+            if (isItemInList(val)) { alert('Già in lista'); return; }
+            shoppingItems.unshift({ text: val, purchased: false });
+            itemInput.value = '';
+            persist(); renderShoppingList();
+        }
+
+        window.toggleItem = (index) => { 
+            shoppingItems[index].purchased = !shoppingItems[index].purchased; 
+            persist(); renderShoppingList(); 
+        };
+
+        window.deleteItem = (index) => { 
+            shoppingItems.splice(index, 1); 
+            persist(); renderShoppingList(); 
+        };
+
+        function renderRecurringList() {
+            recurringListContainer.innerHTML = '';
+            recurringItems.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'recurring-item';
+                div.innerHTML = `<span>${item}</span><button class="btn-remove-rec" onclick="removeRecurring(${index})">Elimina</button>`;
+                recurringListContainer.appendChild(div);
+            });
+        }
+
+        function addRecurring() {
+            const val = recurringInput.value.trim();
+            if (!val) return;
+            if (!recurringItems.some(i => i.toLowerCase() === val.toLowerCase())) {
+                recurringItems.push(val);
+                recurringInput.value = '';
+                persist(); renderRecurringList();
+            }
+        }
+
+        window.removeRecurring = (index) => { recurringItems.splice(index, 1); persist(); renderRecurringList(); };
+
+        function loadRecurringToShopping() {
+            let added = false;
+            recurringItems.forEach(recItem => {
+                if (!isItemInList(recItem)) {
+                    shoppingItems.push({ text: recItem, purchased: false });
+                    added = true;
+                }
+            });
+            if (added) { persist(); renderShoppingList(); }
+        }
+
+        addButton.addEventListener('click', addItem);
+        addRecurringButton.addEventListener('click', addRecurring);
+        loadRecurringButton.addEventListener('click', loadRecurringToShopping);
+        clearAllButton.addEventListener('click', () => { if(confirm("Svuoto la lista?")) { shoppingItems = []; persist(); renderShoppingList(); } });
+        
+        itemInput.addEventListener('keypress', e => { if (e.key === 'Enter') addItem(); });
+        recurringInput.addEventListener('keypress', e => { if (e.key === 'Enter') addRecurring(); });
+
+        renderShoppingList();
+        renderRecurringList();
+    </script>
+</body>
+</html>
