@@ -1,2 +1,2 @@
-# Lista-soesa
+# Lista-spesa
 Gestione lista spesa
