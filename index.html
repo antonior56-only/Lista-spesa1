@@ -2,180 +2,1065 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista della Spesa Smart</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="theme-color" content="#1a73e8">
+    <title>Lista della Spesa Pro+</title>
     <style>
-        :root {
-            --primary: #2563eb;
-            --danger: #ef4444;
-            --bg: #f8fafc;
-            --text: #1e293b;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            display: flex;
-            justify-content: center;
-            padding: 20px;
+            background-color: #f0f2f5;
+            padding: 10px;
+            line-height: 1.5;
+            color: #1c1e21;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark-mode {
+            background-color: #1a1a2e;
+            color: #eee;
+        }
+
+        body.dark-mode .container,
+        body.dark-mode .recurring-section {
+            background: #16213e;
+            color: #eee;
+            border-color: #0f3460;
+        }
+
+        body.dark-mode input[type="text"],
+        body.dark-mode textarea {
+            background: #0f3460;
+            color: #fff;
+            border-color: #1a73e8;
+        }
+
+        body.dark-mode li {
+            background: #1a1a2e;
+            border-color: #0f3460;
         }
 
         .container {
-            background: white;
-            width: 100%;
-            max-width: 400px;
-            padding: 2rem;
+            max-width: 600px;
+            margin: 0 auto 15px auto;
+            background: #ffffff;
+            padding: 18px;
             border-radius: 12px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
 
-        h2 { text-align: center; color: var(--primary); margin-top: 0; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1a73e8;
+            margin: 0;
+        }
+
+        .dark-toggle {
+            background: #1a73e8;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 15px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
 
         .input-group {
             display: flex;
+            flex-direction: column;
             gap: 10px;
-            margin-bottom: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        @media (min-width: 500px) {
+            .input-group {
+                flex-direction: row;
+            }
         }
 
         input[type="text"] {
-            flex-grow: 1;
-            padding: 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
+            flex: 1;
+            padding: 14px;
+            border: 2px solid #dfe1e5;
+            border-radius: 8px;
+            font-size: 16px;
             outline: none;
+            transition: border-color 0.2s;
         }
 
-        button#add-btn {
-            background-color: var(--primary);
+        input[type="text"]:focus {
+            border-color: #1a73e8;
+        }
+
+        .btn-main {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #1a73e8;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s, filter 0.2s;
+        }
+
+        .btn-main:active {
+            transform: scale(0.97);
+        }
+
+        .btn-save {
+            background: #00796b;
+        }
+
+        .utility-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .utility-bar button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: opacity 0.2s;
+        }
+
+        .utility-bar button:hover {
+            opacity: 0.9;
+        }
+
+        .btn-pdf {
+            background: #dc3545;
+        }
+
+        .btn-whatsapp {
+            background: #25D366;
+        }
+
+        .btn-scan {
+            background: #ff9800;
+        }
+
+        .btn-mass-load {
+            background: #8e24aa;
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 8px;
             color: white;
             border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .btn-clear {
+            background: #5f6368;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            color: white;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
         }
 
-        ul { list-style: none; padding: 0; margin-bottom: 20px; }
-
-        li {
-            background: #fff;
-            border-bottom: 1px solid #f1f5f9;
-            padding: 10px;
-            display: flex;
-            justify-content: space-between;
+        /* Modal OCR */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
             align-items: center;
         }
 
-        .item-text { cursor: pointer; flex-grow: 1; }
-        
-        .completed {
-            text-decoration: line-through;
-            color: #94a3b8;
+        .modal.active {
+            display: flex;
         }
 
-        .delete-btn {
-            color: var(--danger);
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1.2rem;
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 90%;
+            width: 500px;
+            max-height: 80%;
+            overflow-y: auto;
         }
 
-        .clear-btn {
-            width: 100%;
-            background-color: transparent;
-            color: var(--danger);
-            border: 1px solid var(--danger);
-            padding: 8px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-
-        .clear-btn:hover {
-            background-color: var(--danger);
+        body.dark-mode .modal-content {
+            background: #1e1e2e;
             color: white;
         }
+
+        .modal-content h3 {
+            margin-bottom: 15px;
+        }
+
+        .camera-preview {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-capture {
+            background: #1a73e8;
+            color: white;
+        }
+
+        .btn-close {
+            background: #5f6368;
+            color: white;
+        }
+
+        .extracted-items {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f0f2f5;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        body.dark-mode .extracted-items {
+            background: #0f3460;
+        }
+
+        .extracted-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .extracted-item input {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .extracted-item label {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        ul {
+            list-style: none;
+            margin-bottom: 15px;
+            max-height: 450px;
+            overflow-y: auto;
+        }
+
+        li {
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background-color: #fff;
+            transition: all 0.2s ease;
+            cursor: grab;
+        }
+
+        li:active {
+            cursor: grabbing;
+        }
+
+        li.dragging {
+            opacity: 0.5;
+        }
+
+        li.purchased {
+            background-color: #f8f9fa;
+            opacity: 0.6;
+        }
+
+        .item-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .item-text {
+            flex: 1;
+            font-size: 17px;
+            font-weight: 500;
+            word-break: break-word;
+        }
+
+        li.purchased .item-text {
+            text-decoration: line-through;
+            color: #777;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .actions button {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            border: none;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-toggle { background: #34a853; }
+        .btn-delete { background: #ea4335; }
+
+        .recurring-section {
+            background-color: #e8f0fe;
+            border: 1px solid #d2e3fc;
+        }
+
+        .recurring-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            border: 1px solid #cdd7e0;
+        }
+
+        .btn-remove-rec {
+            padding: 8px 12px;
+            background: #fce8e6;
+            color: #c5221f;
+            border-radius: 4px;
+            border: 1px solid #fad2cf;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            z-index: 1000;
+            animation: fadeInOut 2s ease;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 12px;
+            }
+            .actions button {
+                padding: 8px;
+                font-size: 12px;
+            }
+            .utility-bar button {
+                font-size: 12px;
+                padding: 10px;
+            }
+        }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
 
-<div class="container">
-    <h2>🛒 La mia Spesa</h2>
-    
-    <div class="input-group">
-        <input type="text" id="item-input" placeholder="Aggiungi prodotto..." onkeypress="handleKeyPress(event)">
-        <button id="add-btn" onclick="addItem()">+</button>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 Lista Spesa Pro+</h1>
+            <button class="dark-toggle" onclick="toggleDarkMode()">🌙</button>
+        </div>
+        
+        <div class="input-group">
+            <input type="text" id="itemInput" placeholder="Cosa devi comprare?" autocomplete="off">
+            <button id="addButton" class="btn-main">➕ Aggiungi</button>
+        </div>
+
+        <div class="utility-bar">
+            <button id="scanButton" class="btn-scan">📷 Scannerizza</button>
+            <button id="pdfButton" class="btn-pdf">📄 PDF</button>
+            <button id="whatsappButton" class="btn-whatsapp">💬 WhatsApp</button>
+        </div>
+        
+        <button id="loadRecurringButton" class="btn-mass-load">🔄 Carica Ricorrenti</button>
+        
+        <ul id="shoppingList"></ul>
+        
+        <button id="clearAllButton" class="btn-clear">🗑️ Svuota tutto</button>
     </div>
 
-    <ul id="shopping-list"></ul>
+    <div class="container recurring-section">
+        <h2>⭐ Articoli Ricorrenti</h2>
+        <div class="input-group">
+            <input type="text" id="recurringInput" placeholder="Es: Pane, Latte..." autocomplete="off">
+            <button id="addRecurringButton" class="btn-main btn-save">💾 Salva</button>
+        </div>
+        <div id="recurringList"></div>
+    </div>
 
-    <button class="clear-btn" onclick="clearAll()">🗑️ Svuota tutta la lista</button>
-</div>
+    <!-- Modal Scanner -->
+    <div id="scanModal" class="modal">
+        <div class="modal-content">
+            <h3>📷 Scannerizza Lista</h3>
+            <p style="font-size: 14px; color: #666; margin-bottom: 15px;">Carica una foto della tua lista scritta a mano o stampata</p>
+            
+            <input type="file" id="imageInput" accept="image/*" style="margin-bottom: 15px; width: 100%;">
+            <img id="previewImage" class="camera-preview" style="display: none;">
+            
+            <div class="modal-buttons">
+                <button id="processImageBtn" class="btn-capture">🔍 Riconosci Testo</button>
+                <button id="closeModalBtn" class="btn-close">❌ Chiudi</button>
+            </div>
+            
+            <div id="extractedItemsContainer" style="display: none;">
+                <h4>📝 Articoli trovati:</h4>
+                <div id="extractedItemsList" class="extracted-items"></div>
+                <div class="modal-buttons" style="margin-top: 10px;">
+                    <button id="addExtractedBtn" class="btn-capture">✅ Aggiungi selezionati</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<script>
-    const input = document.getElementById('item-input');
-    const listContainer = document.getElementById('shopping-list');
+    <script>
+        // Variabili globali
+        let shoppingItems = [];
+        let recurringItems = [];
+        let draggedIndex = null;
+        let extractedWords = [];
 
-    window.onload = () => {
-        const savedItems = JSON.parse(localStorage.getItem('myShoppingList')) || [];
-        savedItems.forEach(item => renderItem(item.text, item.completed));
-    };
+        // Elementi DOM
+        let itemInput, addButton, shoppingList, clearAllButton;
+        let recurringInput, addRecurringButton, recurringListContainer, loadRecurringButton;
+        let pdfButton, whatsappButton, scanButton;
+        let scanModal, imageInput, previewImage, processImageBtn, closeModalBtn, addExtractedBtn;
 
-    function addItem() {
-        const text = input.value.trim();
-        if (text === '') return;
-        renderItem(text, false);
-        saveData();
-        input.value = '';
-    }
-
-    function handleKeyPress(e) {
-        if (e.key === 'Enter') addItem();
-    }
-
-    function renderItem(text, completed) {
-        const li = document.createElement('li');
-        li.innerHTML = `
-            <span class="item-text ${completed ? 'completed' : ''}" onclick="toggleComplete(this)">
-                ${text}
-            </span>
-            <button class="delete-btn" onclick="removeItem(this)">×</button>
-        `;
-        listContainer.appendChild(li);
-    }
-
-    function toggleComplete(element) {
-        element.classList.toggle('completed');
-        saveData();
-    }
-
-    function removeItem(element) {
-        element.parentElement.remove();
-        saveData();
-    }
-
-    function clearAll() {
-        if (confirm("Sei sicuro di voler cancellare tutta la lista?")) {
-            listContainer.innerHTML = '';
-            localStorage.removeItem('myShoppingList');
+        // ========== FUNZIONI PRINCIPALI ==========
+        
+        function loadData(key) {
+            try {
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : null;
+            } catch(e) {
+                console.error('Errore load:', e);
+                return null;
+            }
         }
-    }
 
-    function saveData() {
-        const items = [];
-        document.querySelectorAll('li').forEach(li => {
-            const span = li.querySelector('.item-text');
-            items.push({
-                text: span.innerText.replace('×', '').trim(),
-                completed: span.classList.contains('completed')
+        function persist() {
+            localStorage.setItem('shoppingData', JSON.stringify(shoppingItems));
+            localStorage.setItem('recurringData', JSON.stringify(recurringItems));
+        }
+
+        function showToast(message, duration = 2000) {
+            const existingToast = document.querySelector('.toast');
+            if(existingToast) existingToast.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), duration);
+        }
+
+        function vibrate() {
+            if('vibrate' in navigator) navigator.vibrate(50);
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function isItemInList(itemName) {
+            return shoppingItems.some(item => item.text.toLowerCase() === itemName.toLowerCase());
+        }
+
+        // ========== GESTIONE LISTA ==========
+        
+        function addItem() {
+            const val = itemInput.value.trim();
+            if (!val) {
+                showToast('⚠️ Inserisci un prodotto');
+                return;
+            }
+            
+            if (isItemInList(val)) {
+                showToast('❌ Prodotto già in lista');
+                return;
+            }
+            
+            shoppingItems.unshift({ 
+                text: val, 
+                purchased: false,
+                createdAt: Date.now()
             });
-        });
-        localStorage.setItem('myShoppingList', JSON.stringify(items));
-    }
-</script>
+            
+            itemInput.value = '';
+            persist();
+            renderShoppingList();
+            vibrate();
+            showToast(`✅ "${val}" aggiunto`);
+            itemInput.focus();
+        }
 
+        function toggleItem(index) {
+            shoppingItems[index].purchased = !shoppingItems[index].purchased;
+            persist();
+            renderShoppingList();
+            vibrate();
+        }
+
+        function deleteItem(index) {
+            const itemName = shoppingItems[index].text;
+            shoppingItems.splice(index, 1);
+            persist();
+            renderShoppingList();
+            showToast(`🗑️ "${itemName}" eliminato`);
+        }
+
+        function addMultipleItems(items) {
+            let added = 0;
+            items.forEach(item => {
+                if (item.trim() && !isItemInList(item.trim())) {
+                    shoppingItems.unshift({ 
+                        text: item.trim(), 
+                        purchased: false,
+                        createdAt: Date.now()
+                    });
+                    added++;
+                }
+            });
+            if (added > 0) {
+                persist();
+                renderShoppingList();
+                showToast(`✅ Aggiunti ${added} nuovi articoli`);
+            } else if (items.length > 0) {
+                showToast('⚠️ Nessun nuovo articolo da aggiungere');
+            }
+            return added;
+        }
+
+        // ========== ARTICOLI RICORRENTI ==========
+        
+        function addRecurring() {
+            const val = recurringInput.value.trim();
+            if (!val) return;
+            
+            if (!recurringItems.some(i => i.toLowerCase() === val.toLowerCase())) {
+                recurringItems.push(val);
+                recurringInput.value = '';
+                persist();
+                renderRecurringList();
+                showToast(`⭐ "${val}" salvato nei ricorrenti`);
+            } else {
+                showToast('⚠️ Già presente nei ricorrenti');
+            }
+        }
+
+        function removeRecurring(index) {
+            const item = recurringItems[index];
+            recurringItems.splice(index, 1);
+            persist();
+            renderRecurringList();
+            showToast(`🗑️ "${item}" rimosso dai ricorrenti`);
+        }
+
+        function loadRecurringToShopping() {
+            let added = 0;
+            recurringItems.forEach(recItem => {
+                if (!isItemInList(recItem)) {
+                    shoppingItems.push({ text: recItem, purchased: false, createdAt: Date.now() });
+                    added++;
+                }
+            });
+            
+            if (added > 0) {
+                persist();
+                renderShoppingList();
+                showToast(`✅ Aggiunti ${added} articoli ricorrenti`);
+            } else {
+                showToast('ℹ️ Tutti gli articoli sono già in lista');
+            }
+        }
+
+        function clearAll() {
+            if (confirm('⚠️ Svuotare completamente la lista della spesa?')) {
+                shoppingItems = [];
+                persist();
+                renderShoppingList();
+                showToast('🗑️ Lista svuotata');
+            }
+        }
+
+        // ========== OCR - RICONOSCIMENTO TESTO ==========
+        
+        async function processImage() {
+            const file = imageInput.files[0];
+            if (!file) {
+                showToast('📷 Seleziona prima un\'immagine');
+                return;
+            }
+
+            showToast('🔍 Riconoscimento testo in corso...');
+            
+            try {
+                const { data: { text } } = await Tesseract.recognize(file, 'ita');
+                extractedWords = extractItemsFromText(text);
+                showExtractedItems(extractedWords);
+            } catch (error) {
+                console.error('Errore OCR:', error);
+                showToast('❌ Errore nel riconoscimento del testo');
+            }
+        }
+
+        function extractItemsFromText(text) {
+            let cleanText = text.toLowerCase();
+            cleanText = cleanText.replace(/^[\d\s\.\-\*•]+/gm, '');
+            let lines = cleanText.split(/\n|,|;|•|\*|-/);
+            
+            let items = [];
+            const commonWords = ['lista', 'spesa', 'acquisti', 'comprare', 'da', 'il', 'la', 'le', 'gli', 'lo', 'un', 'una', 'uno', 'dei', 'delle'];
+            
+            for (let line of lines) {
+                let item = line.trim();
+                item = item.replace(/^\d+\.?\s*/, '');
+                item = item.replace(/[.,!?;]/g, '');
+                item = item.trim();
+                
+                if (item.length > 2 && item.length < 50 && !commonWords.includes(item)) {
+                    item = item.charAt(0).toUpperCase() + item.slice(1);
+                    if (!items.includes(item)) {
+                        items.push(item);
+                    }
+                }
+            }
+            
+            return items.slice(0, 30);
+        }
+
+        function showExtractedItems(items) {
+            const container = document.getElementById('extractedItemsContainer');
+            const listDiv = document.getElementById('extractedItemsList');
+            
+            if (!items || items.length === 0) {
+                listDiv.innerHTML = '<p style="color: #999;">Nessun articolo riconosciuto. Prova con un\'immagine più chiara.</p>';
+                container.style.display = 'block';
+                return;
+            }
+            
+            listDiv.innerHTML = '';
+            items.forEach((item, idx) => {
+                const div = document.createElement('div');
+                div.className = 'extracted-item';
+                div.innerHTML = `
+                    <input type="checkbox" id="extract_${idx}" checked>
+                    <label for="extract_${idx}">${escapeHtml(item)}</label>
+                `;
+                listDiv.appendChild(div);
+            });
+            
+            container.style.display = 'block';
+        }
+
+        function addSelectedExtracted() {
+            const checkboxes = document.querySelectorAll('#extractedItemsList input[type="checkbox"]');
+            const selectedItems = [];
+            
+            checkboxes.forEach((cb, idx) => {
+                if (cb.checked) {
+                    const label = cb.nextElementSibling;
+                    if (label) selectedItems.push(label.textContent);
+                }
+            });
+            
+            if (selectedItems.length > 0) {
+                addMultipleItems(selectedItems);
+                scanModal.classList.remove('active');
+                previewImage.style.display = 'none';
+                imageInput.value = '';
+                document.getElementById('extractedItemsContainer').style.display = 'none';
+                extractedWords = [];
+            } else {
+                showToast('⚠️ Seleziona almeno un articolo');
+            }
+        }
+
+        // ========== PDF ==========
+        
+        async function generatePDF() {
+            if (shoppingItems.length === 0) {
+                showToast('⚠️ La lista è vuota');
+                return;
+            }
+
+            showToast('📄 Generazione PDF...');
+            
+            const pdfContent = document.createElement('div');
+            pdfContent.style.padding = '20px';
+            pdfContent.style.fontFamily = 'Arial, sans-serif';
+            pdfContent.style.backgroundColor = 'white';
+            pdfContent.style.color = 'black';
+            
+            const purchased = shoppingItems.filter(item => item.purchased);
+            const notPurchased = shoppingItems.filter(item => !item.purchased);
+            
+            pdfContent.innerHTML = `
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="color: #1a73e8;">🛒 Lista della Spesa</h1>
+                    <p style="color: #666;">${new Date().toLocaleDateString('it-IT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                </div>
+                
+                <div style="margin-bottom: 30px;">
+                    <h2 style="color: #34a853;">✅ Da Comprare</h2>
+                    ${notPurchased.length > 0 ? 
+                        notPurchased.map(item => `<p style="margin: 8px 0;">• ${escapeHtml(item.text)}</p>`).join('') :
+                        '<p>Nessun articolo da comprare</p>'
+                    }
+                </div>
+                
+                ${purchased.length > 0 ? `
+                <div style="margin-bottom: 30px;">
+                    <h2 style="color: #ea4335;">✓ Già Acquistati</h2>
+                    ${purchased.map(item => `<p style="margin: 8px 0; text-decoration: line-through; color: #999;">• ${escapeHtml(item.text)}</p>`).join('')}
+                </div>
+                ` : ''}
+                
+                <div style="margin-top: 40px; padding-top: 20px; border-top: 2px dashed #ddd; text-align: center; color: #666;">
+                    <p>📊 Totale articoli: ${shoppingItems.length}</p>
+                    <p>✅ Acquistati: ${purchased.length} | ⏳ Da comprare: ${notPurchased.length}</p>
+                </div>
+            `;
+            
+            document.body.appendChild(pdfContent);
+            
+            const opt = {
+                margin: [0.5, 0.5, 0.5, 0.5],
+                filename: `lista_spesa_${Date.now()}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+            
+            try {
+                await html2pdf().set(opt).from(pdfContent).save();
+                showToast('✅ PDF generato!');
+            } catch (error) {
+                console.error(error);
+                showToast('❌ Errore PDF');
+            } finally {
+                document.body.removeChild(pdfContent);
+            }
+        }
+
+        // ========== WHATSAPP ==========
+        
+        function getFormattedListText() {
+            if (shoppingItems.length === 0) {
+                return "📋 La lista della spesa è vuota";
+            }
+            
+            const purchased = shoppingItems.filter(item => item.purchased);
+            const notPurchased = shoppingItems.filter(item => !item.purchased);
+            
+            let text = "🛒 *LISTA DELLA SPESA*\n";
+            text += `📅 ${new Date().toLocaleDateString('it-IT')}\n`;
+            text += "━".repeat(20) + "\n\n";
+            
+            if (notPurchased.length > 0) {
+                text += "✅ *DA COMPRARE:*\n";
+                notPurchased.forEach((item, idx) => {
+                    text += `${idx + 1}. ${item.text}\n`;
+                });
+                text += "\n";
+            }
+            
+            if (purchased.length > 0) {
+                text += "✓ *GIÀ ACQUISTATI:*\n";
+                purchased.forEach((item, idx) => {
+                    text += `${idx + 1}. ${item.text} ✓\n`;
+                });
+                text += "\n";
+            }
+            
+            text += "━".repeat(20) + "\n";
+            text += `📊 *Totale articoli:* ${shoppingItems.length}\n`;
+            text += `✅ Acquistati: ${purchased.length}\n`;
+            text += `⏳ Da comprare: ${notPurchased.length}\n`;
+            
+            return text;
+        }
+
+        async function sendWhatsApp() {
+            if (shoppingItems.length === 0) {
+                showToast('⚠️ La lista è vuota');
+                return;
+            }
+
+            const text = getFormattedListText();
+            const encodedText = encodeURIComponent(text);
+            window.open(`https://wa.me/?text=${encodedText}`, '_blank');
+            showToast('💬 Apertura WhatsApp...');
+            await navigator.clipboard.writeText(text);
+        }
+
+        // ========== RENDERING ==========
+        
+        function renderShoppingList() {
+            if (!shoppingList) return;
+            shoppingList.innerHTML = '';
+            
+            const sortedItems = [...shoppingItems]
+                .map((item, idx) => ({ ...item, originalIndex: idx }))
+                .sort((a, b) => a.purchased - b.purchased);
+            
+            sortedItems.forEach((item, displayIndex) => {
+                const li = document.createElement('li');
+                if (item.purchased) li.classList.add('purchased');
+                li.setAttribute('data-index', item.originalIndex);
+                li.setAttribute('draggable', 'true');
+                
+                li.innerHTML = `
+                    <div class="item-content">
+                        <span class="item-text">${escapeHtml(item.text)}</span>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-toggle" data-action="toggle" data-index="${item.originalIndex}">${item.purchased ? '↩️ Annulla' : '✅ Preso'}</button>
+                        <button class="btn-delete" data-action="delete" data-index="${item.originalIndex}">🗑️ Elimina</button>
+                    </div>
+                `;
+                
+                shoppingList.appendChild(li);
+            });
+            
+            // Attach event listeners
+            document.querySelectorAll('[data-action="toggle"]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleItem(parseInt(btn.dataset.index));
+                });
+            });
+            
+            document.querySelectorAll('[data-action="delete"]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteItem(parseInt(btn.dataset.index));
+                });
+            });
+        }
+
+        function renderRecurringList() {
+            if (!recurringListContainer) return;
+            recurringListContainer.innerHTML = '';
+            recurringItems.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'recurring-item';
+                div.innerHTML = `
+                    <span>📌 ${escapeHtml(item)}</span>
+                    <button class="btn-remove-rec" data-rec-index="${index}">❌ Elimina</button>
+                `;
+                recurringListContainer.appendChild(div);
+            });
+            
+            document.querySelectorAll('.btn-remove-rec').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    removeRecurring(parseInt(btn.dataset.recIndex));
+                });
+            });
+        }
+
+        function checkExpiredItems() {
+            const oneWeek = 7 * 24 * 60 * 60 * 1000;
+            const oldItems = shoppingItems.filter(item => 
+                item.createdAt && (Date.now() - item.createdAt > oneWeek) && !item.purchased
+            );
+            if (oldItems.length > 0) {
+                setTimeout(() => showToast(`⚠️ ${oldItems.length} articolo/i datato/i`), 1000);
+            }
+        }
+
+        // ========== DRAG & DROP ==========
+        
+        function handleDragStart(e, index) {
+            draggedIndex = index;
+            e.target.closest('li')?.classList.add('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDrop(e, targetIndex) {
+            e.preventDefault();
+            const draggedLi = document.querySelector('.dragging');
+            if (draggedLi) draggedLi.classList.remove('dragging');
+            
+            if (draggedIndex !== null && draggedIndex !== targetIndex) {
+                const draggedItem = shoppingItems[draggedIndex];
+                shoppingItems.splice(draggedIndex, 1);
+                shoppingItems.splice(targetIndex, 0, draggedItem);
+                persist();
+                renderShoppingList();
+            }
+            draggedIndex = null;
+        }
+
+        // ========== INIT ==========
+        
+        function init() {
+            // Carica dati
+            shoppingItems = loadData('shoppingData') || [];
+            recurringItems = loadData('recurringData') || [];
+            
+            // Inizializza elementi
+            itemInput = document.getElementById('itemInput');
+            addButton = document.getElementById('addButton');
+            shoppingList = document.getElementById('shoppingList');
+            clearAllButton = document.getElementById('clearAllButton');
+            recurringInput = document.getElementById('recurringInput');
+            addRecurringButton = document.getElementById('addRecurringButton');
+            recurringListContainer = document.getElementById('recurringList');
+            loadRecurringButton = document.getElementById('loadRecurringButton');
+            pdfButton = document.getElementById('pdfButton');
+            whatsappButton = document.getElementById('whatsappButton');
+            scanButton = document.getElementById('scanButton');
+            scanModal = document.getElementById('scanModal');
+            imageInput = document.getElementById('imageInput');
+            previewImage = document.getElementById('previewImage');
+            processImageBtn = document.getElementById('processImageBtn');
+            closeModalBtn = document.getElementById('closeModalBtn');
+            addExtractedBtn = document.getElementById('addExtractedBtn');
+            
+            // Event listeners
+            addButton.addEventListener('click', addItem);
+            addRecurringButton.addEventListener('click', addRecurring);
+            loadRecurringButton.addEventListener('click', loadRecurringToShopping);
+            clearAllButton.addEventListener('click', clearAll);
+            pdfButton.addEventListener('click', generatePDF);
+            whatsappButton.addEventListener('click', sendWhatsApp);
+            scanButton.addEventListener('click', () => scanModal.classList.add('active'));
+            closeModalBtn.addEventListener('click', () => {
+                scanModal.classList.remove('active');
+                imageInput.value = '';
+                document.getElementById('extractedItemsContainer').style.display = 'none';
+            });
+            processImageBtn.addEventListener('click', processImage);
+            addExtractedBtn.addEventListener('click', addSelectedExtracted);
+            
+            itemInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addItem(); });
+            recurringInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addRecurring(); });
+            
+            // Preview immagine
+            imageInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        previewImage.src = event.target.result;
+                        previewImage.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Drag & drop sulla lista
+            shoppingList.addEventListener('dragstart', (e) => {
+                const li = e.target.closest('li');
+                if (li && li.dataset.index) {
+                    handleDragStart(e, parseInt(li.dataset.index));
+                }
+            });
+            shoppingList.addEventListener('dragover', handleDragOver);
+            shoppingList.addEventListener('drop', (e) => {
+                const li = e.target.closest('li');
+                if (li) {
+                    const items = Array.from(shoppingList.children);
+                    const targetIndex = items.indexOf(li);
+                    handleDrop(e, targetIndex);
+                }
+            });
+            
+            // Render
+            renderShoppingList();
+            renderRecurringList();
+            checkExpiredItems();
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const btn = document.querySelector('.dark-toggle');
+            btn.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+
+        // Carica modalità scura
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            const darkBtn = document.querySelector('.dark-toggle');
+            if (darkBtn) darkBtn.textContent = '☀️';
+        }
+
+        // Avvia app
+        window.addEventListener('DOMContentLoaded', init);
+        window.toggleDarkMode = toggleDarkMode;
+    </script>
 </body>
 </html>
