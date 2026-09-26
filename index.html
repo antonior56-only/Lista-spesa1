@@ -386,12 +386,21 @@
             .actions button { padding: 8px; font-size: 12px; }
             .utility-bar button { font-size: 12px; padding: 10px; }
         }
+    
+        .install-wrap { max-width: 600px; margin: 10px auto; }
+        .install-button { width: 100%; padding: 13px 16px; border: 0; border-radius: 10px; background: #1a73e8; color: white; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 10px rgba(26,115,232,.22); }
+        .install-button[hidden] { display: none; }
     </style>
     <!-- OTTIMIZZAZIONE: Aggiunto l'attributo "defer" agli script esterni per evitare che blocchino il rendering iniziale della pagina -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
     <script src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js" defer></script>
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./icon.svg" type="image/svg+xml">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
 </head>
 <body>
+    <div class="install-wrap" id="installWrap" hidden><button class="install-button" id="installButton" type="button">⬇️ Scarica / Installa app</button></div>
 
     <div class="container">
         <div class="header">
@@ -1048,5 +1057,42 @@
         // Avvia app
         window.addEventListener('DOMContentLoaded', init);
     </script>
+<script>
+(() => {
+  const wrap = document.getElementById('installWrap');
+  const button = document.getElementById('installButton');
+  let installPrompt = null;
+  const isInstalled = () => window.matchMedia('(display-mode: standalone)').matches || window.matchMedia('(display-mode: fullscreen)').matches || window.navigator.standalone === true;
+  const updateButton = () => { wrap.hidden = isInstalled(); };
+  updateButton();
+  window.addEventListener('beforeinstallprompt', event => {
+    event.preventDefault();
+    installPrompt = event;
+    updateButton();
+  });
+  window.addEventListener('appinstalled', () => {
+    installPrompt = null;
+    updateButton();
+  });
+  button.addEventListener('click', async () => {
+    if (installPrompt) {
+      installPrompt.prompt();
+      await installPrompt.userChoice;
+      installPrompt = null;
+      updateButton();
+      return;
+    }
+    if (isInstalled()) { updateButton(); return; }
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    alert(isIOS
+      ? 'Per installare l’app: tocca Condividi e poi “Aggiungi alla schermata Home”.'
+      : 'Per installare l’app, apri il menu del browser (⋮ o Condividi) e scegli “Installa app” oppure “Aggiungi alla schermata Home”.');
+  });
+  window.matchMedia('(display-mode: standalone)').addEventListener?.('change', updateButton);
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(error => console.error('Service worker non disponibile:', error)));
+  }
+})();
+</script>
 </body>
 </html>
